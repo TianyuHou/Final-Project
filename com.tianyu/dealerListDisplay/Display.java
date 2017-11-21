@@ -22,6 +22,7 @@ import java.awt.Font;
 import javax.swing.JTable;
 import javax.swing.JButton;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.JCheckBox;
 import javax.swing.JScrollPane;
 import javax.swing.event.DocumentEvent;
@@ -62,6 +63,8 @@ public class Display extends JFrame {
 	
 	private JButton close;
 	private JButton min;
+	
+	private String selectedId;
 
 	/**
 	 * Launch the application.
@@ -368,6 +371,14 @@ public class Display extends JFrame {
 		};
 
 		table = new JTable(model);
+		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		table.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				int selectedRow = table.getSelectedRow();
+				selectedId = (String) model.getValueAt(selectedRow, 0);
+				System.out.println(selectedId);
+			}
+		});
 		fillTable(list);
 
 		scrollPane = new JScrollPane(table);
@@ -380,6 +391,12 @@ public class Display extends JFrame {
 	// ADD DELETE EDIT BTN
 	private void registerAEDBtn() {
 		btnAdd = new JButton("Add");
+		btnAdd.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				
+			}
+		});
 		btnAdd.setFont(new Font("Segoe UI Historic", Font.PLAIN, 25));
 		btnAdd.setForeground(new Color(255, 255, 255));
 		btnAdd.setBackground(SystemColor.textHighlight);
@@ -387,6 +404,16 @@ public class Display extends JFrame {
 		panelTop.add(btnAdd);
 
 		btnDelete = new JButton("Delete");
+		btnDelete.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				for(Vehicle v : list) {
+					if(v.id.equals(getSelectedId())) {
+						
+					}
+				}
+			}
+		});
 		btnDelete.setFont(new Font("Segoe UI Historic", Font.PLAIN, 25));
 		btnDelete.setForeground(new Color(255, 255, 255));
 		btnDelete.setBackground(SystemColor.textHighlight);
@@ -394,6 +421,12 @@ public class Display extends JFrame {
 		panelTop.add(btnDelete);
 
 		btnEdit = new JButton("Edit");
+		btnEdit.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				
+			}
+		});
 		btnEdit.setFont(new Font("Segoe UI Historic", Font.PLAIN, 25));
 		btnEdit.setForeground(new Color(255, 255, 255));
 		btnEdit.setBackground(SystemColor.textHighlight);
@@ -479,5 +512,9 @@ public class Display extends JFrame {
 		}
 
 		table.invalidate();
+	}
+	
+	public String getSelectedId() {
+		return selectedId;
 	}
 }
