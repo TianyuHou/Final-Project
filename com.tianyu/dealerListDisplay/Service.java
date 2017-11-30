@@ -7,6 +7,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
+
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
 
 public class Service {
 	
@@ -37,13 +42,73 @@ public class Service {
 		return res;
 	}
 	
-	public static void search(ArrayList<Vehicle> list, String str) {
-		
+	public static ArrayList<Vehicle> search(ArrayList<Vehicle> filter, ArrayList<Vehicle> list, JTextField txtSearch) {
+		filter = new ArrayList<>();
+		String str = txtSearch.getText();
+		str = str.toUpperCase();
+
+		for (Vehicle item : list) {
+			HashSet<String> dic = new HashSet<>();
+			dic.add(item.id.toUpperCase());
+			dic.add(item.webId.toUpperCase());
+			dic.add(item.category.toString().toUpperCase());
+			dic.add(item.make.toUpperCase());
+			dic.add(item.model.toUpperCase());
+			dic.add(item.trim.toUpperCase());
+			dic.add(item.type.toUpperCase());
+			dic.add(item.year.toUpperCase());
+			boolean[] dp = new boolean[str.length() + 1];
+			dp[0] = true;
+			for (int i = 1; i <= str.length(); i++) {
+				for (int j = 0; j < i; j++) {
+					if (dp[j] && dic.contains(str.substring(j, i))) {
+						dp[i] = true;
+					}
+				}
+			}
+			if (dp[str.length()]) {
+				filter.add(item);
+			}
+		}
+		return filter;
 	}
 	
+	public static ArrayList<Vehicle> filter(ArrayList<Vehicle> filter, ArrayList<Vehicle> list, JTextField txtFilter) {
+		filter = new ArrayList<>();
+		String str = txtFilter.getText();
+		str = str.toUpperCase();
+		for (Vehicle item : list) {
+			String pattern = item.id + item.webId + item.category.toString() + item.year + item.make
+					+ item.model + item.trim + item.type + item.price;
+			if (pattern.toUpperCase().contains(str)) {
+				filter.add(item);
+			}
+		}
+		return filter;
+	}
 	
-	
-	
+	public static void fillTable(ArrayList<Vehicle> list, JTable table) {
+		DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+		tableModel.setRowCount(0);
+
+		for (Vehicle vehicle : list) {
+			String[] arr = new String[10];
+			arr[0] = vehicle.id;
+			arr[1] = vehicle.webId;
+			arr[2] = vehicle.category.toString();
+			arr[3] = vehicle.year;
+			arr[4] = vehicle.make;
+			arr[5] = vehicle.model;
+			arr[6] = vehicle.trim;
+			arr[7] = vehicle.type;
+			arr[8] = String.valueOf(vehicle.price);
+			arr[9] = vehicle.photo.toString();
+
+			tableModel.addRow(arr);
+		}
+
+		table.invalidate();
+	}
 	
 	public static void sortById(ArrayList<Vehicle> list, boolean isAscend) {
 		Collections.sort(list, new Comparator<Vehicle>() {
