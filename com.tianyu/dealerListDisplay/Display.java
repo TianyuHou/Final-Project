@@ -4,29 +4,45 @@ import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
 import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.JTable;
 import javax.swing.JButton;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.JCheckBox;
 import javax.swing.JScrollPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.SystemColor;
+import javax.swing.JRadioButton;
+import javax.swing.JToggleButton;
+import javax.swing.JComboBox;
 
 public class Display extends JFrame {
 
@@ -38,9 +54,11 @@ public class Display extends JFrame {
 	private JFrame frame;
 
 	private static Point origin = new Point();
-	private JTextField textField;
+	private JTextField txtFilter;
+	private JTextField txtSearch;
 
 	private ArrayList<Vehicle> list;
+	private ArrayList<Vehicle> filter;
 	private JTable table;
 
 	private JButton btnAdd;
@@ -55,13 +73,34 @@ public class Display extends JFrame {
 	private JCheckBox chckbxMake;
 	private JCheckBox chckbxModel;
 	private JCheckBox chckbxCategory;
-
-	private JLabel lblSort;
-	private JLabel lblSearch;
+	private ButtonGroup checkBoxGroup;
 	private JLabel labelBG;
-	
+	private JLabel labelTitle;
+	private JLabel labelTitleIcon;
+
 	private JButton close;
 	private JButton min;
+
+	private String selectedId;
+
+	private final Color topBG = new Color(33, 33, 33);
+	private final Color topFG = new Color(255, 255, 255);
+	private final Color btnColor = new Color(198, 40, 40);
+	private final Color tableOddRow = new Color(255,255,255);
+	private final Color tableEvenRow = new Color(224,224,224);
+	private final Color tableHeaderColor = new Color(117,117,117);
+
+	private final Font checkbxFont = new Font("Segoe UI Historic", Font.ITALIC, 21);
+	private final Font radioFont = new Font("Segoe UI Historic", Font.ITALIC, 20);
+	private final Font txtFont = new Font("Segoe UI Historic", Font.PLAIN, 22);
+	private final Font tableHeaderFont = new Font("Segoe UI Historic", Font.PLAIN, 15);
+	private final Font titleFont = new Font("Malgun Gothic", Font.BOLD, 30);
+	
+	private ButtonGroup sortGroup;
+	private JRadioButton rdbtnHighToLow;
+	private JRadioButton rdbtnLowToHigh;
+	
+	private boolean isAscending;
 
 	/**
 	 * Launch the application.
@@ -86,6 +125,7 @@ public class Display extends JFrame {
 		String f = Display.class.getResource("asset/test.txt").getPath();
 		File file = new File(f);
 		list = Service.readAndGetVehicles(file);
+		filter = new ArrayList<>();
 		contentPane = new JPanel();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setUndecorated(true);
@@ -93,269 +133,380 @@ public class Display extends JFrame {
 		contentPane.setLayout(null);
 		setLocationRelativeTo(null);
 		setContentPane(contentPane);
-		
+
 		registerPanel();
-		
+
 		registerAEDBtn();
-		
+
+		registerRadio();
+
 		registerSortCheckBox();
-		
+
 		registerTable();
-		
+
 		registerSearch();
 		
+		registerFilter();
+		
+		registerTitle();
+
 		setCloseAndMin();
 
 		setDrag();
 	}
-	
-	//close
+
+	// close
 	private void exit() {
 		System.exit(0);
 	}
-	
-	//minimize
+
+	// minimize
 	private void minimize() {
 		frame.setExtendedState(ICONIFIED);
 	}
-	
-	//Panel
+
+	// Panel
 	private void registerPanel() {
-		//Left Panel
+		// Left Panel
 		leftPanel = new JPanel();
 		leftPanel.setBounds(0, 0, 350, 800);
 		leftPanel.setLayout(null);
 		contentPane.add(leftPanel);
-	
+
 		labelBG = new JLabel("");
 		labelBG.setDisplayedMnemonic('0');
-		labelBG.setIcon(new ImageIcon(Display.class.getResource("/com/Tianyu/dealerListDisplay/asset/1.jpg")));
+		labelBG.setIcon(new ImageIcon(Display.class.getResource("/com/Tianyu/dealerListDisplay/asset/2.jpg")));
 		labelBG.setBounds(0, 0, 350, 800);
 		leftPanel.add(labelBG);
-		
-		//Top Panel
+
+		// Top Panel
 		panelTop = new JPanel();
-		panelTop.setBackground(new Color(255, 255, 255));
+		panelTop.setBackground(topBG);
 		panelTop.setBounds(350, 0, 950, 220);
 		panelTop.setLayout(null);
 		contentPane.add(panelTop);
 	}
+	
+	//Filter
+	private void registerFilter() {
+		txtFilter = new JTextField("Filter");
+		txtFilter.setForeground(Color.GRAY);
+		txtFilter.setBackground(topBG);
+		txtFilter.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.WHITE));
+		txtFilter.setFont(txtFont);
+		txtFilter.setBounds(270, 171, 177, 29);
+		panelTop.add(txtFilter);
+		txtFilter.addFocusListener(new FocusListener() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				if (txtFilter.getText().equals("Filter")) {
+					txtFilter.setText("");
+					txtFilter.setForeground(topFG);
+				}
+			}
 
-	//Search
-	private void registerSearch() {
-		textField = new JTextField();
-		textField.getDocument().addDocumentListener(new DocumentListener() {
-			
+			@Override
+			public void focusLost(FocusEvent e) {
+				if (txtFilter.getText().isEmpty()) {
+					txtFilter.setForeground(Color.GRAY);
+					txtFilter.setText("Filter");
+					fillTable(list);
+				}
+			}
+		});
+		
+		txtFilter.getDocument().addDocumentListener(new DocumentListener() {
+
 			@Override
 			public void removeUpdate(DocumentEvent e) {
 				warn();
 			}
-			
+
 			@Override
 			public void insertUpdate(DocumentEvent e) {
 				warn();
 			}
-			
+
 			@Override
 			public void changedUpdate(DocumentEvent e) {
 				warn();
 			}
-			
+
 			public void warn() {
-				ArrayList<Vehicle> filter = new ArrayList<>();
-				String str = textField.getText();
+				filter = new ArrayList<>();
+				String str = txtFilter.getText();
 				str = str.toUpperCase();
 				for (Vehicle item : list) {
-					String pattern = item.id+item.category.toString()+item.webId+item.make+item.year+item.price+item.type+item.trim+item.model;
+					String pattern = item.id + item.webId + item.category.toString() + item.year + item.make
+							+ item.model + item.trim + item.type + item.price;
 					if (pattern.toUpperCase().contains(str)) {
 						filter.add(item);
 					}
 				}
 				fillTable(filter);
-				
 			}
 		});
-		textField.setFont(new Font("Segoe UI Light", Font.PLAIN, 23));
-		textField.setBounds(168, 167, 275, 40);
-		panelTop.add(textField);
-		textField.setColumns(10);
-
-		lblSearch = new JLabel("Search");
-		lblSearch.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 25));
-		lblSearch.setBounds(70, 168, 175, 30);
-		panelTop.add(lblSearch);
-		
-		
 	}
-	
+
+	// Search
+	private void registerSearch() {
+		txtSearch = new JTextField("Search");
+		txtSearch.setForeground(Color.GRAY);
+		txtSearch.setBackground(topBG);
+		txtSearch.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.WHITE));
+		txtSearch.setFont(txtFont);
+		txtSearch.setBounds(57, 172, 177, 29);
+		panelTop.add(txtSearch);
+		txtSearch.addFocusListener(new FocusListener() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				if (txtSearch.getText().equals("Search")) {
+					txtSearch.setText("");
+					txtSearch.setForeground(topFG);
+				}
+			}
+
+			@Override
+			public void focusLost(FocusEvent e) {
+				if (txtSearch.getText().isEmpty()) {
+					txtSearch.setForeground(Color.GRAY);
+					txtSearch.setText("Search");
+					fillTable(list);
+				}
+			}
+		});
+		
+		
+		txtSearch.getDocument().addDocumentListener(new DocumentListener() {
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				warn();
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				warn();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				warn();
+			}
+
+			public void warn() {
+				filter = new ArrayList<>();
+				String str = txtSearch.getText();
+				str = str.toUpperCase();
+
+				for (Vehicle item : list) {
+					HashSet<String> dic = new HashSet<>();
+					dic.add(item.id.toUpperCase());
+					dic.add(item.webId.toUpperCase());
+					dic.add(item.category.toString().toUpperCase());
+					dic.add(item.make.toUpperCase());
+					dic.add(item.model.toUpperCase());
+					dic.add(item.trim.toUpperCase());
+					dic.add(item.type.toUpperCase());
+					dic.add(item.year.toUpperCase());
+					boolean[] dp = new boolean[str.length() + 1];
+					dp[0] = true;
+					for (int i = 1; i <= str.length(); i++) {
+						for (int j = 0; j < i; j++) {
+							if (dp[j] && dic.contains(str.substring(j, i))) {
+								dp[i] = true;
+							}
+						}
+					}
+					if (dp[str.length()]) {
+						filter.add(item);
+					}
+				}
+				fillTable(filter);
+			}
+		});
+	}
+
 	// Sort Function
 	private void registerSortCheckBox() {
-		lblSort = new JLabel("SortBy");
-		lblSort.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 25));
-		lblSort.setBounds(70, 35, 105, 29);
-		panelTop.add(lblSort);
-	
+		
+		ArrayList<Vehicle> tmp = new ArrayList<>(list);
+		checkBoxGroup = new ButtonGroup();
 		chckbxWebId = new JCheckBox("WebId");
 		chckbxWebId.addActionListener(new ActionListener() {
-	
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ArrayList<Vehicle> tmp = new ArrayList<>(list);
 				if (chckbxWebId.isSelected()) {
-					Service.sortByWebId(tmp);
-					fillTable(tmp);
+					ArrayList sortList = filter.size() == 0? tmp : filter;
+					Service.sortByWebId(sortList,isAscending);
+					fillTable(sortList);
 				} else {
-					fillTable(tmp);
+					fillTable(list);
 				}
-	
 			}
 		});
-		chckbxWebId.setFont(new Font("Segoe UI Historic", Font.PLAIN, 23));
-		chckbxWebId.setBackground(new Color(255, 255, 255));
-		chckbxWebId.setBounds(167, 35, 149, 29);
+		chckbxWebId.setFont(checkbxFont);
+		chckbxWebId.setBackground(topBG);
+		chckbxWebId.setForeground(topFG);
+		chckbxWebId.setBounds(433, 75, 134, 29);
 		panelTop.add(chckbxWebId);
-	
+
 		chckbxYear = new JCheckBox("Year");
 		chckbxYear.addActionListener(new ActionListener() {
-	
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ArrayList<Vehicle> tmp = new ArrayList<>(list);
 				if (chckbxYear.isSelected()) {
-					Service.sortByYear(tmp);
-					fillTable(tmp);
+					ArrayList sortList = filter.size() == 0? tmp : filter;
+					Service.sortByYear(sortList,isAscending);
+					fillTable(sortList);
 				} else {
-					fillTable(tmp);
+					fillTable(list);
 				}
-	
 			}
 		});
-		chckbxYear.setFont(new Font("Segoe UI Historic", Font.PLAIN, 23));
-		chckbxYear.setBackground(new Color(255, 255, 255));
-		chckbxYear.setBounds(343, 35, 149, 29);
+		chckbxYear.setFont(checkbxFont);
+		chckbxYear.setBackground(topBG);
+		chckbxYear.setForeground(topFG);
+		chckbxYear.setBounds(585, 75, 113, 29);
 		panelTop.add(chckbxYear);
-	
+
 		chckbxId = new JCheckBox("Id");
 		chckbxId.addActionListener(new ActionListener() {
-	
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ArrayList<Vehicle> tmp = new ArrayList<>(list);
 				if (chckbxId.isSelected()) {
-					Service.sortById(tmp);
-					fillTable(tmp);
+					ArrayList sortList = filter.size() == 0? tmp : filter;
+					Service.sortById(sortList,isAscending);
+					fillTable(sortList);
 				} else {
-					fillTable(tmp);
+					fillTable(list);
 				}
-	
+
 			}
 		});
-		chckbxId.setFont(new Font("Segoe UI Historic", Font.PLAIN, 23));
-		chckbxId.setBackground(new Color(255, 255, 255));
-		chckbxId.setBounds(522, 35, 149, 29);
+		chckbxId.setFont(checkbxFont);
+		chckbxId.setBackground(topBG);
+		chckbxId.setForeground(topFG);
+		chckbxId.setBounds(712, 75, 93, 29);
 		panelTop.add(chckbxId);
-	
+
 		chckbxPrice = new JCheckBox("Price");
 		chckbxPrice.addActionListener(new ActionListener() {
-	
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ArrayList<Vehicle> tmp = new ArrayList<>(list);
 				if (chckbxPrice.isSelected()) {
-					Service.sortByPrice(tmp);
-					fillTable(tmp);
+					ArrayList sortList = filter.size() == 0? tmp : filter;
+					Service.sortByPrice(sortList,isAscending);
+					fillTable(sortList);
 				} else {
-					fillTable(tmp);
+					fillTable(list);
 				}
-	
+
 			}
 		});
-		chckbxPrice.setFont(new Font("Segoe UI Historic", Font.PLAIN, 23));
-		chckbxPrice.setBackground(new Color(255, 255, 255));
-		chckbxPrice.setBounds(706, 35, 97, 29);
+		chckbxPrice.setFont(checkbxFont);
+		chckbxPrice.setBackground(topBG);
+		chckbxPrice.setForeground(topFG);
+		chckbxPrice.setBounds(822, 75, 97, 29);
 		panelTop.add(chckbxPrice);
-	
+
 		chckbxMake = new JCheckBox("Make");
 		chckbxMake.addActionListener(new ActionListener() {
-	
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ArrayList<Vehicle> tmp = new ArrayList<>(list);
 				if (chckbxMake.isSelected()) {
-					Service.sortByMake(tmp);
-					fillTable(tmp);
+					ArrayList sortList = filter.size() == 0? tmp : filter;
+					Service.sortByMake(sortList,isAscending);
+					fillTable(sortList);
 				} else {
-					fillTable(tmp);
+					fillTable(list);
 				}
-	
+
 			}
 		});
-		chckbxMake.setFont(new Font("Segoe UI Historic", Font.PLAIN, 23));
-		chckbxMake.setBackground(new Color(255, 255, 255));
-		chckbxMake.setBounds(706, 90, 105, 29);
+		chckbxMake.setFont(checkbxFont);
+		chckbxMake.setBackground(topBG);
+		chckbxMake.setForeground(topFG);
+		chckbxMake.setBounds(822, 111, 105, 29);
 		panelTop.add(chckbxMake);
-	
+
 		chckbxCategory = new JCheckBox("Category");
 		chckbxCategory.addActionListener(new ActionListener() {
-	
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ArrayList<Vehicle> tmp = new ArrayList<>(list);
 				if (chckbxCategory.isSelected()) {
-					Service.sortByCategory(tmp);
-					fillTable(tmp);
+					ArrayList sortList = filter.size() == 0? tmp : filter;
+					Service.sortByCategory(sortList,isAscending);
+					fillTable(sortList);
 				} else {
-					fillTable(tmp);
+					fillTable(list);
 				}
-	
+
 			}
 		});
-		chckbxCategory.setFont(new Font("Segoe UI Historic", Font.PLAIN, 23));
-		chckbxCategory.setBackground(Color.WHITE);
-		chckbxCategory.setBounds(167, 90, 149, 29);
+		chckbxCategory.setFont(checkbxFont);
+		chckbxCategory.setBackground(topBG);
+		chckbxCategory.setForeground(topFG);
+		chckbxCategory.setBounds(433, 111, 134, 29);
 		panelTop.add(chckbxCategory);
-	
+
 		chckbxModel = new JCheckBox("Model");
 		chckbxModel.addActionListener(new ActionListener() {
-	
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ArrayList<Vehicle> tmp = new ArrayList<>(list);
 				if (chckbxModel.isSelected()) {
-					Service.sortByModel(tmp);
-					fillTable(tmp);
+					ArrayList sortList = filter.size() == 0? tmp : filter;
+					Service.sortByModel(sortList,isAscending);
+					fillTable(sortList);
 				} else {
-					fillTable(tmp);
+					fillTable(list);
 				}
-	
 			}
 		});
-		chckbxModel.setFont(new Font("Segoe UI Historic", Font.PLAIN, 23));
-		chckbxModel.setBackground(Color.WHITE);
-		chckbxModel.setBounds(343, 90, 149, 29);
+		chckbxModel.setFont(checkbxFont);
+		chckbxModel.setBackground(topBG);
+		chckbxModel.setForeground(topFG);
+		chckbxModel.setBounds(585, 111, 113, 29);
 		panelTop.add(chckbxModel);
-	
+
 		chckbxType = new JCheckBox("Type");
 		chckbxType.addActionListener(new ActionListener() {
-	
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ArrayList<Vehicle> tmp = new ArrayList<>(list);
 				if (chckbxType.isSelected()) {
-					Service.sortByType(tmp);
-					fillTable(tmp);
+					ArrayList sortList = filter.size() == 0? tmp : filter;
+					Service.sortByType(sortList,isAscending);
+					fillTable(sortList);
 				} else {
-					fillTable(tmp);
+					fillTable(list);
 				}
-	
+
 			}
 		});
-		chckbxType.setFont(new Font("Segoe UI Historic", Font.PLAIN, 23));
-		chckbxType.setBackground(Color.WHITE);
-		chckbxType.setBounds(522, 90, 149, 29);
+		chckbxType.setFont(checkbxFont);
+		chckbxType.setBackground(topBG);
+		chckbxType.setForeground(topFG);
+		chckbxType.setBounds(712, 111, 93, 29);
 		panelTop.add(chckbxType);
+		
+		checkBoxGroup.add(chckbxCategory);
+		checkBoxGroup.add(chckbxId);
+		checkBoxGroup.add(chckbxMake);
+		checkBoxGroup.add(chckbxModel);
+		checkBoxGroup.add(chckbxPrice);
+		checkBoxGroup.add(chckbxType);
+		checkBoxGroup.add(chckbxYear);
+		checkBoxGroup.add(chckbxWebId);
 	}
-	
+
 	// ADD Table
 	private void registerTable() {
 		String[] headers = { "Id", "WebId", "Category", "Year", "Make", "Model", "Trim", "Type", "Price", "Photo" };
@@ -368,35 +519,154 @@ public class Display extends JFrame {
 		};
 
 		table = new JTable(model);
+		TableColumn column = null;
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		for (int i = 0; i < headers.length; i++) {
+			column = table.getColumnModel().getColumn(i);
+			switch (i) {
+			case 0:
+				column.setMinWidth(100);
+				column.setMaxWidth(100);
+				continue;
+			case 1:
+				column.setMinWidth(100);
+				column.setMaxWidth(100);
+				continue;
+			case 2:
+				column.setMinWidth(80);
+				column.setMaxWidth(80);
+				continue;
+			case 3:
+				column.setMinWidth(50);
+				column.setMaxWidth(50);
+				continue;
+			case 4:
+				column.setMinWidth(100);
+				column.setMaxWidth(100);
+				continue;
+			case 5:
+				column.setMinWidth(200);
+				column.setMaxWidth(200);
+				continue;
+			case 6:
+				column.setMinWidth(300);
+				column.setMaxWidth(300);
+				continue;
+			case 7:
+				column.setMinWidth(150);
+				column.setMaxWidth(150);
+				continue;
+			case 8:
+				column.setMinWidth(100);
+				column.setMaxWidth(100);
+				continue;
+			case 9:
+				column.setMinWidth(550);
+				column.setMaxWidth(550);
+				continue;
+			}
+		}
+		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		table.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				int selectedRow = table.getSelectedRow();
+				selectedId = (String) model.getValueAt(selectedRow, 0);
+				System.out.println(selectedId);
+			}
+		});
 		fillTable(list);
-
+		JTableHeader tableHeader = table.getTableHeader();
+		tableHeader.setReorderingAllowed(false);
+		tableHeader.setBackground(tableHeaderColor);
+		tableHeader.setForeground(topFG);
+		tableHeader.setFont(tableHeaderFont);
+		table.setShowGrid(false);
+		table.setIntercellSpacing(new Dimension(0,0));
+		table.setRowMargin(0);
 		scrollPane = new JScrollPane(table);
 		scrollPane.setBounds(350, 220, 950, 580);
+		table.setPreferredScrollableViewportSize(new Dimension(1950, 580));
+		// set ceter alignment;
+		DefaultTableCellRenderer tablecell = new DefaultTableCellRenderer() {
+			 @Override  
+             public Component getTableCellRendererComponent(JTable table,  
+                     Object value, boolean isSelected, boolean hasFocus,  
+                     int row, int column) {  
+                 if (row % 2 == 0)  
+                     setBackground(tableEvenRow); 
+                 else if (row % 2 == 1)  
+                     setBackground(tableOddRow);  
+                 return super.getTableCellRendererComponent(table, value,  
+                         isSelected, hasFocus, row, column);  
+             }  
+		};
+		tablecell.setHorizontalAlignment(JLabel.CENTER);
+		table.setDefaultRenderer(Object.class, tablecell);
+		// set horizon scroll;
+		scrollPane.setAutoscrolls(true);
 		contentPane.add(scrollPane);
 
 		scrollPane.setViewportView(table);
+	}
+	
+	//Title and Icon
+	private void registerTitle() {
+		labelTitleIcon = new JLabel("");
+		labelTitleIcon.setIcon(new ImageIcon(Display.class.getResource("/com/Tianyu/dealerListDisplay/asset/home.png")));
+		labelTitleIcon.setBounds(43, 11, 130, 129);
+		panelTop.add(labelTitleIcon);
+		labelTitle = new JLabel("Inventory List Management");
+		labelTitle.setFont(titleFont);
+		labelTitle.setForeground(topFG);
+		labelTitle.setBounds(199, 12, 481, 61);
+		panelTop.add(labelTitle);
 	}
 
 	// ADD DELETE EDIT BTN
 	private void registerAEDBtn() {
 		btnAdd = new JButton("Add");
+		btnAdd.setBorderPainted(false);
+		btnAdd.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+
+			}
+		});
 		btnAdd.setFont(new Font("Segoe UI Historic", Font.PLAIN, 25));
 		btnAdd.setForeground(new Color(255, 255, 255));
-		btnAdd.setBackground(SystemColor.textHighlight);
+		btnAdd.setBackground(btnColor);
 		btnAdd.setBounds(545, 165, 110, 40);
 		panelTop.add(btnAdd);
 
 		btnDelete = new JButton("Delete");
+		btnDelete.setBorderPainted(false);
+		btnDelete.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				for (Vehicle v : list) {
+					if (v.id.equals(getSelectedId())) {
+
+					}
+				}
+			}
+		});
 		btnDelete.setFont(new Font("Segoe UI Historic", Font.PLAIN, 25));
 		btnDelete.setForeground(new Color(255, 255, 255));
-		btnDelete.setBackground(SystemColor.textHighlight);
+		btnDelete.setBackground(btnColor);
 		btnDelete.setBounds(805, 165, 110, 40);
 		panelTop.add(btnDelete);
 
 		btnEdit = new JButton("Edit");
+		btnEdit.setBorderPainted(false);
+		btnEdit.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+
+			}
+		});
 		btnEdit.setFont(new Font("Segoe UI Historic", Font.PLAIN, 25));
 		btnEdit.setForeground(new Color(255, 255, 255));
-		btnEdit.setBackground(SystemColor.textHighlight);
+		btnEdit.setBackground(btnColor);
 		btnEdit.setBounds(675, 165, 110, 40);
 		panelTop.add(btnEdit);
 	}
@@ -409,11 +679,11 @@ public class Display extends JFrame {
 			}
 		});
 		close.setBorderPainted(false);
-		close.setBackground(new Color(255, 255, 255));
+		close.setBackground(topBG);
 		close.setIcon(new ImageIcon(Display.class.getResource("/com/Tianyu/dealerListDisplay/asset/close.png")));
 		close.setBounds(905, 12, 32, 38);
 		panelTop.add(close);
-		
+
 		min = new JButton("");
 		min.addMouseListener(new MouseAdapter() {
 			@Override
@@ -423,9 +693,44 @@ public class Display extends JFrame {
 		});
 		min.setIcon(new ImageIcon(Display.class.getResource("/com/Tianyu/dealerListDisplay/asset/min.png")));
 		min.setBorderPainted(false);
-		min.setBackground(Color.WHITE);
+		min.setBackground(topBG);
 		min.setBounds(860, 12, 32, 38);
 		panelTop.add(min);
+	}
+
+	private void registerRadio() {
+		rdbtnHighToLow = new JRadioButton("Sort High To Low");
+		rdbtnHighToLow.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				isAscending = false;
+			}
+		});
+		rdbtnHighToLow.setFont(radioFont);
+		rdbtnHighToLow.setBounds(198, 75, 178, 29);
+		rdbtnHighToLow.setBackground(topBG);
+		rdbtnHighToLow.setForeground(topFG);
+		
+
+		rdbtnLowToHigh = new JRadioButton("Sort Low To High");
+		rdbtnLowToHigh.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				isAscending = true;
+			}
+		});
+		rdbtnLowToHigh.setFont(radioFont);
+		rdbtnLowToHigh.setBounds(198, 111, 178, 29);
+		rdbtnLowToHigh.setBackground(topBG);
+		rdbtnLowToHigh.setForeground(topFG);
+		
+		
+		sortGroup = new ButtonGroup();
+		sortGroup.add(rdbtnHighToLow);
+		sortGroup.add(rdbtnLowToHigh);
+		
+		panelTop.add(rdbtnHighToLow);
+		panelTop.add(rdbtnLowToHigh);
 	}
 
 	// setDrag
@@ -479,5 +784,13 @@ public class Display extends JFrame {
 		}
 
 		table.invalidate();
+	}
+
+	public String getSelectedId() {
+		return selectedId;
+	}
+
+	public ArrayList<Vehicle> getList() {
+		return list;
 	}
 }

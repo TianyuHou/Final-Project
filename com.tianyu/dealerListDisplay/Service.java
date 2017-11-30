@@ -15,7 +15,8 @@ public class Service {
 		BufferedReader buf = null;
 		try {
 			buf = new BufferedReader(new FileReader(file));
-			String curLine = buf.readLine();
+			String curLine = buf.readLine(
+					);
 			curLine = buf.readLine();
 			while(curLine != null) {
 				String[] arr = curLine.split("~");
@@ -44,74 +45,106 @@ public class Service {
 	
 	
 	
-	public static void sortById(ArrayList<Vehicle> list) {
+	public static void sortById(ArrayList<Vehicle> list, boolean isAscend) {
 		Collections.sort(list, new Comparator<Vehicle>() {
 			@Override
 			public int compare(Vehicle o1, Vehicle o2) {
-				return o1.id.compareTo(o2.id);
+				if(isAscend) {
+					return o1.id.compareTo(o2.id);
+				}else {
+					return o2.id.compareTo(o1.id);
+				}
 			}
 		});
 	}
 	
-	public static void sortByWebId(ArrayList<Vehicle> list) {
+	public static void sortByWebId(ArrayList<Vehicle> list, boolean isAscend) {
 		Collections.sort(list, new Comparator<Vehicle>() {
 			@Override
 			public int compare(Vehicle o1, Vehicle o2) {
-				return o1.webId.compareTo(o2.webId);
+				if(isAscend) {
+					return o1.webId.compareTo(o2.webId);
+				}else {
+					return o2.webId.compareTo(o1.webId);
+				}
 			}
 		});
 	}
 	
-	public static void sortByCategory(ArrayList<Vehicle> list) {
+	public static void sortByCategory(ArrayList<Vehicle> list, boolean isAscend) {
 		Collections.sort(list, new Comparator<Vehicle>() {
 			@Override
 			public int compare(Vehicle o1, Vehicle o2) {
-				return o1.category.compareTo(o2.category);
+				if(isAscend) {
+					return o1.category.compareTo(o2.category);
+				}else {
+					return o2.category.compareTo(o1.category);
+				}
 			}
 		});
 	}
 	
-	public static void sortByYear(ArrayList<Vehicle> list) {
+	public static void sortByYear(ArrayList<Vehicle> list, boolean isAscend) {
 		Collections.sort(list, new Comparator<Vehicle>() {
 			@Override
 			public int compare(Vehicle o1, Vehicle o2) {
-				return o1.year.compareTo(o2.year);
+				if(isAscend) {
+					return o1.year.compareTo(o2.year);
+				}else {
+					return o2.year.compareTo(o1.year);
+				}
 			}
 		});
 	}
 	
-	public static void sortByPrice(ArrayList<Vehicle> list) {
+	public static void sortByPrice(ArrayList<Vehicle> list, boolean isAscend) {
 		Collections.sort(list, new Comparator<Vehicle>() {
 			@Override
 			public int compare(Vehicle o1, Vehicle o2) {
-				return (int)(o1.price - o2.price);
+				if(isAscend) {
+					return (int)(o1.price - o2.price);
+				}else {
+					return (int)(o2.price - o1.price);
+				}
 			}
 		});
 	}
 	
-	public static void sortByModel(ArrayList<Vehicle> list) {
+	public static void sortByModel(ArrayList<Vehicle> list, boolean isAscend) {
 		Collections.sort(list, new Comparator<Vehicle>() {
 			@Override
 			public int compare(Vehicle o1, Vehicle o2) {
-				return o1.model.compareTo(o2.model);
+				if(isAscend) {
+					return o1.model.compareTo(o2.model);
+				}else {
+					return o2.model.compareTo(o1.model);
+				}
 			}
 		});
 	}
 	
-	public static void sortByType(ArrayList<Vehicle> list) {
+	public static void sortByType(ArrayList<Vehicle> list, boolean isAscend) {
 		Collections.sort(list, new Comparator<Vehicle>() {
 			@Override
 			public int compare(Vehicle o1, Vehicle o2) {
-				return o1.type.compareTo(o2.type);
+				if(isAscend) {
+					return o1.type.compareTo(o2.type);
+				}else {
+					return o2.type.compareTo(o1.type);
+				}
 			}
 		});
 	}
 	
-	public static void sortByMake(ArrayList<Vehicle> list) {
+	public static void sortByMake(ArrayList<Vehicle> list, boolean isAscend) {
 		Collections.sort(list, new Comparator<Vehicle>() {
 			@Override
 			public int compare(Vehicle o1, Vehicle o2) {
-				return o1.make.compareTo(o2.make);
+				if(isAscend) {
+					return o1.make.compareTo(o2.make);
+				}else {
+					return o2.make.compareTo(o1.make);
+				}
 			}
 		});
 	}
