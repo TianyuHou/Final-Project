@@ -32,12 +32,9 @@ import javax.swing.JTable;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-<<<<<<< HEAD
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-=======
->>>>>>> 3aa93efd9e7f63e7190c3cf6fef377f1cf767be8
 import javax.swing.JCheckBox;
 import javax.swing.JScrollPane;
 import javax.swing.event.DocumentEvent;
@@ -83,8 +80,6 @@ public class Display extends JFrame {
 
 	private JButton close;
 	private JButton min;
-	
-	private String selectedId;
 
 	private String selectedId;
 
@@ -131,6 +126,7 @@ public class Display extends JFrame {
 		File file = new File(f);
 		list = Service.readAndGetVehicles(file);
 		filter = new ArrayList<>();
+		isAscending = true;
 		contentPane = new JPanel();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setUndecorated(true);
@@ -524,7 +520,6 @@ public class Display extends JFrame {
 		};
 
 		table = new JTable(model);
-<<<<<<< HEAD
 		TableColumn column = null;
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		for (int i = 0; i < headers.length; i++) {
@@ -572,8 +567,6 @@ public class Display extends JFrame {
 				continue;
 			}
 		}
-=======
->>>>>>> 3aa93efd9e7f63e7190c3cf6fef377f1cf767be8
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
@@ -633,18 +626,11 @@ public class Display extends JFrame {
 	// ADD DELETE EDIT BTN
 	private void registerAEDBtn() {
 		btnAdd = new JButton("Add");
-<<<<<<< HEAD
 		btnAdd.setBorderPainted(false);
 		btnAdd.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 
-=======
-		btnAdd.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				
->>>>>>> 3aa93efd9e7f63e7190c3cf6fef377f1cf767be8
 			}
 		});
 		btnAdd.setFont(new Font("Segoe UI Historic", Font.PLAIN, 25));
@@ -654,7 +640,6 @@ public class Display extends JFrame {
 		panelTop.add(btnAdd);
 
 		btnDelete = new JButton("Delete");
-<<<<<<< HEAD
 		btnDelete.setBorderPainted(false);
 		btnDelete.addMouseListener(new MouseAdapter() {
 			@Override
@@ -662,14 +647,6 @@ public class Display extends JFrame {
 				for (Vehicle v : list) {
 					if (v.id.equals(getSelectedId())) {
 
-=======
-		btnDelete.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				for(Vehicle v : list) {
-					if(v.id.equals(getSelectedId())) {
-						
->>>>>>> 3aa93efd9e7f63e7190c3cf6fef377f1cf767be8
 					}
 				}
 			}
@@ -681,18 +658,11 @@ public class Display extends JFrame {
 		panelTop.add(btnDelete);
 
 		btnEdit = new JButton("Edit");
-<<<<<<< HEAD
 		btnEdit.setBorderPainted(false);
 		btnEdit.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 
-=======
-		btnEdit.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				
->>>>>>> 3aa93efd9e7f63e7190c3cf6fef377f1cf767be8
 			}
 		});
 		btnEdit.setFont(new Font("Segoe UI Historic", Font.PLAIN, 25));
@@ -730,11 +700,42 @@ public class Display extends JFrame {
 	}
 
 	private void registerRadio() {
+		ArrayList<Vehicle> tmp = new ArrayList<>(list);
 		rdbtnHighToLow = new JRadioButton("Sort High To Low");
 		rdbtnHighToLow.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				isAscending = false;
+				ArrayList sortList = filter.size() == 0? tmp : filter;
+				if (chckbxWebId.isSelected()) {
+					Service.sortByWebId(sortList,isAscending);
+					
+				} else if (chckbxCategory.isSelected()) {
+					Service.sortByCategory(sortList,isAscending);
+					
+				} else if (chckbxId.isSelected()) {
+					Service.sortById(sortList,isAscending);
+					
+				} else if (chckbxMake.isSelected()) {
+					Service.sortByMake(sortList,isAscending);
+					
+				} else if (chckbxModel.isSelected()) {
+					Service.sortByModel(sortList,isAscending);
+					
+				} else if (chckbxPrice.isSelected()) {
+					Service.sortByPrice(sortList,isAscending);
+					
+				} else if (chckbxType.isSelected()) {
+					Service.sortByType(sortList,isAscending);
+					
+				} else if (chckbxYear.isSelected()) {
+					Service.sortByYear(sortList,isAscending);
+					
+				} else {
+					fillTable(list);
+					return;
+				}
+				fillTable(sortList);
 			}
 		});
 		rdbtnHighToLow.setFont(radioFont);
@@ -748,6 +749,36 @@ public class Display extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				isAscending = true;
+				ArrayList sortList = filter.size() == 0? tmp : filter;
+				if (chckbxWebId.isSelected()) {
+					Service.sortByWebId(sortList,isAscending);
+					
+				} else if (chckbxCategory.isSelected()) {
+					Service.sortByCategory(sortList,isAscending);
+					
+				} else if (chckbxId.isSelected()) {
+					Service.sortById(sortList,isAscending);
+					
+				} else if (chckbxMake.isSelected()) {
+					Service.sortByMake(sortList,isAscending);
+					
+				} else if (chckbxModel.isSelected()) {
+					Service.sortByModel(sortList,isAscending);
+					
+				} else if (chckbxPrice.isSelected()) {
+					Service.sortByPrice(sortList,isAscending);
+					
+				} else if (chckbxType.isSelected()) {
+					Service.sortByType(sortList,isAscending);
+					
+				} else if (chckbxYear.isSelected()) {
+					Service.sortByYear(sortList,isAscending);
+					
+				} else {
+					fillTable(list);
+					return;
+				}
+				fillTable(sortList);
 			}
 		});
 		rdbtnLowToHigh.setFont(radioFont);
@@ -816,7 +847,6 @@ public class Display extends JFrame {
 
 		table.invalidate();
 	}
-<<<<<<< HEAD
 
 	public String getSelectedId() {
 		return selectedId;
@@ -825,10 +855,4 @@ public class Display extends JFrame {
 	public ArrayList<Vehicle> getList() {
 		return list;
 	}
-=======
-	
-	public String getSelectedId() {
-		return selectedId;
-	}
->>>>>>> 3aa93efd9e7f63e7190c3cf6fef377f1cf767be8
 }
