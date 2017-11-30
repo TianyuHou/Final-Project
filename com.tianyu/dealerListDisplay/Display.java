@@ -154,6 +154,8 @@ public class Display extends JFrame {
 		setCloseAndMin();
 
 		setDrag();
+		
+		rdbtnLowToHigh.setSelected(true);
 	}
 
 	// close
