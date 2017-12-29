@@ -1,3 +1,7 @@
+/*这是JAVA Course work final project的一段function的代码，选择这段代码的原因是
+在实现其中search function的时候第一次感受到了刷leetcode的作用，因为使用了其中经典题目 word break
+的dynamic programming 的解法使runtime 降低至 n^2*/
+
 package com.Tianyu.dealerListDisplay;
 
 import java.io.BufferedReader;
